@@ -7,11 +7,13 @@ import (
 	"github.com/nogavadu/auth-service/internal/repository"
 	"github.com/nogavadu/auth-service/internal/service"
 	"github.com/nogavadu/auth-service/internal/utils"
+	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"time"
 )
 
 var (
+	ErrAlreadyExists       = errors.New("already exists")
 	ErrInvalidCredentials  = errors.New("invalid credentials")
 	ErrInvalidRefreshToken = errors.New("invalid refresh token")
 	ErrInternal            = errors.New("internal error")
@@ -46,10 +48,35 @@ func New(
 	}
 }
 
+func (s *authService) Register(ctx context.Context, email, password string) (uint64, error) {
+	const op = "authService.Register"
+
+	log := s.log.With(slog.String("op", op))
+
+	passHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Error("failed to hash password", slog.String("error", err.Error()))
+
+		return 0, ErrInvalidCredentials
+	}
+
+	userId, err := s.repo.Create(ctx, email, string(passHash))
+	if err != nil {
+		if errors.Is(err, repository.ErrAlreadyExists) {
+			return 0, ErrAlreadyExists
+		}
+
+		log.Error("failed to create user", slog.String("error", err.Error()))
+		return 0, ErrInternal
+	}
+
+	return userId, nil
+}
+
 func (s *authService) Login(ctx context.Context, email string, password string) (string, error) {
 	const op = "authService.Login"
 
-	s.log.With(
+	log := s.log.With(
 		slog.String("op", op),
 		slog.String("email", email),
 	)
@@ -60,7 +87,7 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 			return "", ErrInvalidCredentials
 		}
 
-		s.log.Error("failed to get user", slog.String("err", err.Error()))
+		log.Error("failed to get user", slog.String("err", err.Error()))
 		return "", ErrInternal
 	}
 
@@ -77,7 +104,7 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 		s.refreshTokenExpTime,
 	)
 	if err != nil {
-		s.log.Error("failed to generate jwt token", slog.String("err", err.Error()))
+		log.Error("failed to generate jwt token", slog.String("err", err.Error()))
 		return "", ErrInternal
 	}
 
@@ -86,7 +113,7 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 
 func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) (string, error) {
 	const op = "authService.GetRefreshToken"
-	s.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	claims, err := utils.VerifyToken(refreshToken, s.refreshTokenSecret)
 	if err != nil {
@@ -99,7 +126,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 			return "", ErrInvalidCredentials
 		}
 
-		s.log.Error("failed to get user", slog.String("err", err.Error()))
+		log.Error("failed to get user", slog.String("err", err.Error()))
 		return "", ErrInternal
 	}
 
@@ -112,7 +139,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 		s.refreshTokenExpTime,
 	)
 	if err != nil {
-		s.log.Error("failed to generate jwt token", slog.String("err", err.Error()))
+		log.Error("failed to generate jwt token", slog.String("err", err.Error()))
 		return "", ErrInternal
 	}
 
@@ -121,7 +148,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 
 func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (string, error) {
 	const op = "authService.GetAccessToken"
-	s.log.With(slog.String("op", op))
+	log := s.log.With(slog.String("op", op))
 
 	claims, err := utils.VerifyToken(refreshToken, s.refreshTokenSecret)
 	if err != nil {
@@ -134,7 +161,7 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 			return "", ErrInvalidCredentials
 		}
 
-		s.log.Error("failed to get user", slog.String("err", err.Error()))
+		log.Error("failed to get user", slog.String("err", err.Error()))
 		return "", ErrInternal
 	}
 
@@ -147,7 +174,7 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 		s.accessTokenExpTime,
 	)
 	if err != nil {
-		s.log.Error("failed to generate jwt token", slog.String("err", err.Error()))
+		log.Error("failed to generate jwt token", slog.String("err", err.Error()))
 	}
 
 	return accessToken, nil

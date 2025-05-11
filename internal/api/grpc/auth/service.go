@@ -22,6 +22,33 @@ func New(authService service.AuthService) *Implementation {
 	}
 }
 
+func (i *Implementation) Register(ctx context.Context, req *authDesc.RegisterRequest) (*authDesc.RegisterResponse, error) {
+	email := req.GetEmail()
+	if err := validator.New().Var(email, "required,email"); err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid argument")
+	}
+	password := req.GetPassword()
+	if err := validator.New().Var(password, "required"); err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid argument")
+	}
+
+	userId, err := i.serv.Register(ctx, email, password)
+	if err != nil {
+		if errors.Is(err, authService.ErrInvalidCredentials) {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if errors.Is(err, authService.ErrAlreadyExists) {
+			return nil, status.Error(codes.AlreadyExists, err.Error())
+		}
+
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &authDesc.RegisterResponse{
+		UserId: userId,
+	}, nil
+}
+
 func (i *Implementation) Login(ctx context.Context, req *authDesc.LoginRequest) (*authDesc.LoginResponse, error) {
 	email := req.GetEmail()
 	if err := validator.New().Var(email, "required,email"); err != nil {

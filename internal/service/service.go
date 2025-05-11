@@ -5,6 +5,7 @@ import (
 )
 
 type AuthService interface {
+	Register(ctx context.Context, email, password string) (uint64, error)
 	Login(ctx context.Context, email string, password string) (string, error)
 	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)

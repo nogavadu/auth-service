@@ -51,6 +51,8 @@ func New(
 func (s *accessService) Check(ctx context.Context, accessToken string, requiredLvl int) error {
 	const op = "accessService.Check"
 
+	log := s.log.With(slog.String("op", op))
+
 	claims, err := utils.VerifyToken(accessToken, s.accessTokenSecret)
 	if err != nil {
 		return ErrInvalidToken
@@ -62,7 +64,7 @@ func (s *accessService) Check(ctx context.Context, accessToken string, requiredL
 			return ErrInvalidToken
 		}
 
-		s.log.Error("%s: %w", op, err)
+		log.Error("failed to get role", slog.String("error", err.Error()))
 		return ErrInternal
 	}
 

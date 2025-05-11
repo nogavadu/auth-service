@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PgNotFoundCode = "23505"
+	PgErrAlreadyExistsCode = "23505"
 )
 
 var (
@@ -18,6 +18,7 @@ var (
 )
 
 type UserRepository interface {
+	Create(ctx context.Context, email string, passHash string) (uint64, error)
 	GetByEmail(ctx context.Context, email string) (*userRepoModel.User, error)
 }
 

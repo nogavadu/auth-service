@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	repo "github.com/nogavadu/auth-service/internal/repository"
 	userRepoModel "github.com/nogavadu/auth-service/internal/repository/user/model"
@@ -20,8 +21,30 @@ func New(db *pgxpool.Pool) repo.UserRepository {
 	}
 }
 
+func (r *userRepository) Create(ctx context.Context, email string, passHash string) (uint64, error) {
+	const op = "userRepository.Create"
+
+	query := `
+		INSERT INTO users (email, password_hash)
+		VALUES ($1, $2)
+		RETURNING id
+	`
+
+	var id uint64
+	if err := r.db.QueryRow(ctx, query, email, passHash).Scan(&id); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == repo.PgErrAlreadyExistsCode {
+			return 0, fmt.Errorf("%s: %w", op, repo.ErrAlreadyExists)
+		}
+
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return id, nil
+}
+
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*userRepoModel.User, error) {
-	const op = "userRepo.GetByEmail"
+	const op = "userRepository.GetByEmail"
 
 	query := `
 		SELECT (id, email, password_hash, role)
