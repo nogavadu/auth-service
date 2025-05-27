@@ -67,8 +67,8 @@ func main() {
 			),
 		),
 	)
-	descAccess.RegisterAccessV1Server(s,
-		accessAPI.New(
+	descAccess.RegisterAccessV1Server(
+		s, accessAPI.New(
 			accessService.New(
 				log,
 				jwtConfig.RefreshTokenSecret(),
