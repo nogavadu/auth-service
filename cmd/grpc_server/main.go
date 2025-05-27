@@ -45,6 +45,13 @@ func main() {
 	db, err := pgxpool.New(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Error("failed to connect to DB", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
+	err = db.Ping(ctx)
+	if err != nil {
+		log.Error("failed to ping DB", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
 	lis, err := net.Listen("tcp", grpcServerConfig.Address())
