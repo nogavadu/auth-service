@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: grpc-server.Dockerfile
+    networks:
+      - shared_network
     env_file: ".env"
     ports:
       - "${GRPC_SERVER_PORT}:${GRPC_SERVER_PORT}"
@@ -19,8 +21,11 @@ services:
       - "POSTGRES_DB=${PG_DB_NAME}"
       - "POSTGRES_USER=${PG_USER}"
       - "POSTGRES_PASSWORD=${PG_PASSWORD}"
+      - "PGPORT=${PG_PORT}"
     ports:
-      - "4321:5432"
+      - "4321:4321"
+    networks:
+      - shared_network
     volumes:
       - postgres_volume:/var/lib/postgresql/data
     healthcheck:
@@ -33,5 +38,11 @@ services:
     build:
       context: .
       dockerfile: migrator.Dockerfile
+    networks:
+      - shared_network
     restart: on-failure
     env_file: ".env"
+
+networks:
+  shared_network:
+    external: true

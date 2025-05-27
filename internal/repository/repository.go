@@ -23,5 +23,5 @@ type UserRepository interface {
 }
 
 type RoleRepository interface {
-	GetByName(ctx context.Context, name string) (*roleRepoModel.Role, error)
+	GetById(ctx context.Context, id uint64) (*roleRepoModel.Role, error)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
 	accessAPI "github.com/nogavadu/auth-service/internal/api/grpc/access"
 	authAPI "github.com/nogavadu/auth-service/internal/api/grpc/auth"
 	envConfig "github.com/nogavadu/auth-service/internal/config/env"
@@ -12,6 +11,8 @@ import (
 	authService "github.com/nogavadu/auth-service/internal/service/auth"
 	descAccess "github.com/nogavadu/auth-service/pkg/access_v1"
 	descAuth "github.com/nogavadu/auth-service/pkg/auth_v1"
+	"github.com/nogavadu/platform_common/pkg/db/pg"
+	"github.com/nogavadu/platform_common/pkg/db/transaction"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log/slog"
@@ -42,17 +43,20 @@ func main() {
 	}
 
 	ctx := context.Background()
-	db, err := pgxpool.New(ctx, pgConfig.DSN())
+
+	dbc, err := pg.New(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Error("failed to connect to DB", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	err = db.Ping(ctx)
+	err = dbc.DB().Ping(ctx)
 	if err != nil {
 		log.Error("failed to ping DB", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+
+	txManager := transaction.NewTransactionManager(dbc.DB())
 
 	lis, err := net.Listen("tcp", grpcServerConfig.Address())
 	if err != nil {
@@ -70,7 +74,8 @@ func main() {
 				jwtConfig.RefreshTokenExp(),
 				jwtConfig.AccessTokenSecret(),
 				jwtConfig.AccessTokenExp(),
-				userRepo.New(db),
+				userRepo.New(dbc),
+				txManager,
 			),
 		),
 	)
@@ -82,8 +87,8 @@ func main() {
 				jwtConfig.RefreshTokenExp(),
 				jwtConfig.AccessTokenSecret(),
 				jwtConfig.AccessTokenExp(),
-				userRepo.New(db),
-				roleRepo.New(db),
+				userRepo.New(dbc),
+				roleRepo.New(dbc),
 			),
 		),
 	)

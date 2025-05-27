@@ -3,6 +3,7 @@ package access
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/nogavadu/auth-service/internal/repository"
 	"github.com/nogavadu/auth-service/internal/service"
 	"github.com/nogavadu/auth-service/internal/utils"
@@ -58,7 +59,7 @@ func (s *accessService) Check(ctx context.Context, accessToken string, requiredL
 		return ErrInvalidToken
 	}
 
-	role, err := s.roleRepo.GetByName(ctx, claims.Role)
+	role, err := s.roleRepo.GetById(ctx, claims.RoleId)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return ErrInvalidToken
@@ -67,6 +68,9 @@ func (s *accessService) Check(ctx context.Context, accessToken string, requiredL
 		log.Error("failed to get role", slog.String("error", err.Error()))
 		return ErrInternal
 	}
+
+	log.Info(fmt.Sprintf("role is %s, level: %s", role.Name, role.Level))
+	log.Info(fmt.Sprintf("required: %v", requiredLvl))
 
 	if role.Level < requiredLvl {
 		return ErrPermissionDenied

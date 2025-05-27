@@ -7,6 +7,7 @@ import (
 	"github.com/nogavadu/auth-service/internal/repository"
 	"github.com/nogavadu/auth-service/internal/service"
 	"github.com/nogavadu/auth-service/internal/utils"
+	"github.com/nogavadu/platform_common/pkg/db"
 	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"time"
@@ -27,7 +28,8 @@ type authService struct {
 	accessTokenSecret   string
 	accessTokenExpTime  time.Duration
 
-	repo repository.UserRepository
+	userRepo  repository.UserRepository
+	txManager db.TxManager
 }
 
 func New(
@@ -36,7 +38,8 @@ func New(
 	refreshTokenExp time.Duration,
 	accessTokenSecret string,
 	accessTokenExp time.Duration,
-	repo repository.UserRepository,
+	userRepo repository.UserRepository,
+	txManager db.TxManager,
 ) service.AuthService {
 	return &authService{
 		log:                 log,
@@ -44,7 +47,8 @@ func New(
 		refreshTokenExpTime: refreshTokenExp,
 		accessTokenSecret:   accessTokenSecret,
 		accessTokenExpTime:  accessTokenExp,
-		repo:                repo,
+		userRepo:            userRepo,
+		txManager:           txManager,
 	}
 }
 
@@ -60,7 +64,7 @@ func (s *authService) Register(ctx context.Context, email, password string) (uin
 		return 0, ErrInvalidCredentials
 	}
 
-	userId, err := s.repo.Create(ctx, email, string(passHash))
+	userId, err := s.userRepo.Create(ctx, email, string(passHash))
 	if err != nil {
 		if errors.Is(err, repository.ErrAlreadyExists) {
 			return 0, ErrAlreadyExists
@@ -76,12 +80,9 @@ func (s *authService) Register(ctx context.Context, email, password string) (uin
 func (s *authService) Login(ctx context.Context, email string, password string) (string, error) {
 	const op = "authService.Login"
 
-	log := s.log.With(
-		slog.String("op", op),
-		slog.String("email", email),
-	)
+	log := s.log.With(slog.String("op", op))
 
-	user, err := s.repo.GetByEmail(ctx, email)
+	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return "", ErrInvalidCredentials
@@ -97,8 +98,8 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 
 	refreshToken, err := utils.GenerateToken(
 		&model.UserInfo{
-			Email: user.Email,
-			Role:  user.Role,
+			Email:  user.Email,
+			RoleId: user.RoleId,
 		},
 		s.refreshTokenSecret,
 		s.refreshTokenExpTime,
@@ -120,7 +121,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 		return "", ErrInvalidRefreshToken
 	}
 
-	user, err := s.repo.GetByEmail(ctx, claims.Email)
+	user, err := s.userRepo.GetByEmail(ctx, claims.Email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return "", ErrInvalidCredentials
@@ -132,8 +133,8 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 
 	newRefreshToken, err := utils.GenerateToken(
 		&model.UserInfo{
-			Email: user.Email,
-			Role:  user.Role,
+			Email:  user.Email,
+			RoleId: user.RoleId,
 		},
 		s.refreshTokenSecret,
 		s.refreshTokenExpTime,
@@ -155,7 +156,7 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 		return "", ErrInvalidRefreshToken
 	}
 
-	user, err := s.repo.GetByEmail(ctx, claims.Email)
+	user, err := s.userRepo.GetByEmail(ctx, claims.Email)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return "", ErrInvalidCredentials
@@ -167,8 +168,8 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 
 	accessToken, err := utils.GenerateToken(
 		&model.UserInfo{
-			Email: user.Email,
-			Role:  user.Role,
+			Email:  user.Email,
+			RoleId: user.RoleId,
 		},
 		s.accessTokenSecret,
 		s.accessTokenExpTime,

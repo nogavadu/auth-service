@@ -12,13 +12,13 @@ func GenerateToken(info *model.UserInfo, secretKey string, dur time.Duration) (s
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(dur).Unix(),
 		},
-		Email: info.Email,
-		Role:  info.Role,
+		Email:  info.Email,
+		RoleId: info.RoleId,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(secretKey)
+	return token.SignedString([]byte(secretKey))
 }
 
 func VerifyToken(tokenStr, secretKey string) (*model.UserClaims, error) {
@@ -31,7 +31,7 @@ func VerifyToken(tokenStr, secretKey string) (*model.UserClaims, error) {
 				return nil, fmt.Errorf("enexpected token signing method")
 			}
 
-			return secretKey, nil
+			return []byte(secretKey), nil
 		},
 	)
 	if err != nil {

@@ -4,34 +4,45 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgxpool"
 	repo "github.com/nogavadu/auth-service/internal/repository"
 	userRepoModel "github.com/nogavadu/auth-service/internal/repository/user/model"
+	"github.com/nogavadu/platform_common/pkg/db"
 )
 
 type userRepository struct {
-	db *pgxpool.Pool
+	dbc db.Client
 }
 
-func New(db *pgxpool.Pool) repo.UserRepository {
+func New(dbc db.Client) repo.UserRepository {
 	return &userRepository{
-		db: db,
+		dbc: dbc,
 	}
 }
 
 func (r *userRepository) Create(ctx context.Context, email string, passHash string) (uint64, error) {
 	const op = "userRepository.Create"
 
-	query := `
-		INSERT INTO users (email, password_hash)
-		VALUES ($1, $2)
-		RETURNING id
-	`
+	queryRaw, args, err := sq.
+		Insert("users").
+		PlaceholderFormat(sq.Dollar).
+		Columns("email", "password_hash").
+		Values(email, passHash).
+		Suffix("RETURNING id").
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
+
+	query := db.Query{
+		Name:     "userRepository.Create",
+		QueryRaw: queryRaw,
+	}
 
 	var id uint64
-	if err := r.db.QueryRow(ctx, query, email, passHash).Scan(&id); err != nil {
+	if err = r.dbc.DB().ScanOneContext(ctx, &id, query, args...); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == repo.PgErrAlreadyExistsCode {
 			return 0, fmt.Errorf("%s: %w", op, repo.ErrAlreadyExists)
@@ -46,15 +57,24 @@ func (r *userRepository) Create(ctx context.Context, email string, passHash stri
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*userRepoModel.User, error) {
 	const op = "userRepository.GetByEmail"
 
-	query := `
-		SELECT (id, email, password_hash, role)
-		FROM users
-		WHERE email = $1
-		LIMIT 1
-	`
+	queryRaw, args, err := sq.
+		Select("id", "email", "password_hash", "role").
+		PlaceholderFormat(sq.Dollar).
+		From("users").
+		Where(sq.Eq{"email": email}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%s: failed to build query: %w", op, err)
+	}
+
+	query := db.Query{
+		Name:     "userRepository.GetByEmail",
+		QueryRaw: queryRaw,
+	}
 
 	var user userRepoModel.User
-	if err := r.db.QueryRow(ctx, query, email).Scan(&user.ID, &user.Email, &user.PassHash, &user.Role); err != nil {
+	if err = r.dbc.DB().ScanOneContext(ctx, &user, query, args...); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", op, repo.ErrNotFound)
 		}

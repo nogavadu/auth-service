@@ -4,5 +4,5 @@ type User struct {
 	ID       uint64 `db:"id"`
 	Email    string `db:"email"`
 	PassHash string `db:"password_hash"`
-	Role     string `db:"role"`
+	RoleId   uint64 `db:"role"`
 }
