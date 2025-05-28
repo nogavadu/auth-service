@@ -21,7 +21,7 @@ func New(dbc db.Client) repo.RoleRepository {
 	}
 }
 
-func (r *roleRepository) GetById(ctx context.Context, id uint64) (*roleRepoModel.Role, error) {
+func (r *roleRepository) GetById(ctx context.Context, id int) (*roleRepoModel.Role, error) {
 	const op = "roleRepository.GetByName"
 
 	queryRaw, args, err := sq.

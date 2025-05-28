@@ -12,6 +12,7 @@ func GenerateToken(info *model.UserInfo, secretKey string, dur time.Duration) (s
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(dur).Unix(),
 		},
+		Id:     info.Id,
 		Email:  info.Email,
 		RoleId: info.RoleId,
 	}

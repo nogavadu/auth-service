@@ -22,7 +22,7 @@ func New(dbc db.Client) repo.UserRepository {
 	}
 }
 
-func (r *userRepository) Create(ctx context.Context, email string, passHash string) (uint64, error) {
+func (r *userRepository) Create(ctx context.Context, email string, passHash string) (int, error) {
 	const op = "userRepository.Create"
 
 	queryRaw, args, err := sq.
@@ -41,7 +41,7 @@ func (r *userRepository) Create(ctx context.Context, email string, passHash stri
 		QueryRaw: queryRaw,
 	}
 
-	var id uint64
+	var id int
 	if err = r.dbc.DB().ScanOneContext(ctx, &id, query, args...); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == repo.PgErrAlreadyExistsCode {

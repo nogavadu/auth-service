@@ -45,7 +45,7 @@ func (i *Implementation) Register(ctx context.Context, req *authDesc.RegisterReq
 	}
 
 	return &authDesc.RegisterResponse{
-		UserId: userId,
+		UserId: uint64(userId),
 	}, nil
 }
 

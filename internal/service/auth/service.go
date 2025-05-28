@@ -52,7 +52,7 @@ func New(
 	}
 }
 
-func (s *authService) Register(ctx context.Context, email, password string) (uint64, error) {
+func (s *authService) Register(ctx context.Context, email, password string) (int, error) {
 	const op = "authService.Register"
 
 	log := s.log.With(slog.String("op", op))
@@ -98,6 +98,7 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 
 	refreshToken, err := utils.GenerateToken(
 		&model.UserInfo{
+			Id:     user.Id,
 			Email:  user.Email,
 			RoleId: user.RoleId,
 		},
@@ -133,6 +134,7 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 
 	newRefreshToken, err := utils.GenerateToken(
 		&model.UserInfo{
+			Id:     user.Id,
 			Email:  user.Email,
 			RoleId: user.RoleId,
 		},
@@ -168,6 +170,7 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 
 	accessToken, err := utils.GenerateToken(
 		&model.UserInfo{
+			Id:     user.Id,
 			Email:  user.Email,
 			RoleId: user.RoleId,
 		},

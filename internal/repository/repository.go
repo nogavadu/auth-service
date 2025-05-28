@@ -18,10 +18,10 @@ var (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, email string, passHash string) (uint64, error)
+	Create(ctx context.Context, email string, passHash string) (int, error)
 	GetByEmail(ctx context.Context, email string) (*userRepoModel.User, error)
 }
 
 type RoleRepository interface {
-	GetById(ctx context.Context, id uint64) (*roleRepoModel.Role, error)
+	GetById(ctx context.Context, id int) (*roleRepoModel.Role, error)
 }

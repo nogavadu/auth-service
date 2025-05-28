@@ -1,6 +1,7 @@
 package model
 
 type UserInfo struct {
+	Id     int    `json:"id"`
 	Email  string `json:"email"`
-	RoleId uint64 `json:"role"`
+	RoleId int    `json:"role"`
 }
