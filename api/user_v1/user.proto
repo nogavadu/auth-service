@@ -23,7 +23,7 @@ message UserInfo {
   google.protobuf.StringValue name = 1;
   string email = 2;
   google.protobuf.StringValue avatar = 3;
-  int32 role = 4;
+  string role = 4;
   google.protobuf.Timestamp created_at = 5;
 }
 
@@ -31,7 +31,7 @@ message UserUpdateInput {
   google.protobuf.StringValue name = 1;
   google.protobuf.StringValue email = 2;
   google.protobuf.StringValue avatar = 3;
-  google.protobuf.Int32Value role = 4;
+  google.protobuf.StringValue role = 4;
 }
 
 message GetByIdRequest {

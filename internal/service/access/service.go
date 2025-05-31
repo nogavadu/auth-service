@@ -58,7 +58,7 @@ func (s *accessService) Check(ctx context.Context, accessToken string, requiredL
 		return ErrInvalidToken
 	}
 
-	role, err := s.roleRepo.GetById(ctx, claims.RoleId)
+	role, err := s.roleRepo.GetByName(ctx, claims.Role)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return ErrInvalidToken

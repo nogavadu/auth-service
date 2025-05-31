@@ -81,7 +81,7 @@ type UserInfo struct {
 	Name          *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                  `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Avatar        *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Role          int32                   `protobuf:"varint,4,opt,name=role,proto3" json:"role,omitempty"`
+	Role          string                  `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	CreatedAt     *timestamppb.Timestamp  `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -138,11 +138,11 @@ func (x *UserInfo) GetAvatar() *wrapperspb.StringValue {
 	return nil
 }
 
-func (x *UserInfo) GetRole() int32 {
+func (x *UserInfo) GetRole() string {
 	if x != nil {
 		return x.Role
 	}
-	return 0
+	return ""
 }
 
 func (x *UserInfo) GetCreatedAt() *timestamppb.Timestamp {
@@ -157,7 +157,7 @@ type UserUpdateInput struct {
 	Name          *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Email         *wrapperspb.StringValue `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Avatar        *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=avatar,proto3" json:"avatar,omitempty"`
-	Role          *wrapperspb.Int32Value  `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	Role          *wrapperspb.StringValue `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -213,7 +213,7 @@ func (x *UserUpdateInput) GetAvatar() *wrapperspb.StringValue {
 	return nil
 }
 
-func (x *UserUpdateInput) GetRole() *wrapperspb.Int32Value {
+func (x *UserUpdateInput) GetRole() *wrapperspb.StringValue {
 	if x != nil {
 		return x.Role
 	}
@@ -417,14 +417,14 @@ const file_user_proto_rawDesc = "" +
 	"\x04name\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x124\n" +
 	"\x06avatar\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x06avatar\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\x05R\x04role\x129\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\x129\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xde\x01\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xdf\x01\n" +
 	"\x0fUserUpdateInput\x120\n" +
 	"\x04name\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x122\n" +
 	"\x05email\x18\x02 \x01(\v2\x1c.google.protobuf.StringValueR\x05email\x124\n" +
-	"\x06avatar\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x06avatar\x12/\n" +
-	"\x04role\x18\x04 \x01(\v2\x1b.google.protobuf.Int32ValueR\x04role\" \n" +
+	"\x06avatar\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x06avatar\x120\n" +
+	"\x04role\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\x04role\" \n" +
 	"\x0eGetByIdRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"4\n" +
 	"\x0fGetByIdResponse\x12!\n" +
@@ -462,8 +462,7 @@ var file_user_proto_goTypes = []any{
 	(*DeleteRequest)(nil),          // 6: user_v1.DeleteRequest
 	(*wrapperspb.StringValue)(nil), // 7: google.protobuf.StringValue
 	(*timestamppb.Timestamp)(nil),  // 8: google.protobuf.Timestamp
-	(*wrapperspb.Int32Value)(nil),  // 9: google.protobuf.Int32Value
-	(*emptypb.Empty)(nil),          // 10: google.protobuf.Empty
+	(*emptypb.Empty)(nil),          // 9: google.protobuf.Empty
 }
 var file_user_proto_depIdxs = []int32{
 	1,  // 0: user_v1.User.info:type_name -> user_v1.UserInfo
@@ -473,15 +472,15 @@ var file_user_proto_depIdxs = []int32{
 	7,  // 4: user_v1.UserUpdateInput.name:type_name -> google.protobuf.StringValue
 	7,  // 5: user_v1.UserUpdateInput.email:type_name -> google.protobuf.StringValue
 	7,  // 6: user_v1.UserUpdateInput.avatar:type_name -> google.protobuf.StringValue
-	9,  // 7: user_v1.UserUpdateInput.role:type_name -> google.protobuf.Int32Value
+	7,  // 7: user_v1.UserUpdateInput.role:type_name -> google.protobuf.StringValue
 	0,  // 8: user_v1.GetByIdResponse.user:type_name -> user_v1.User
 	2,  // 9: user_v1.UpdateRequest.update_input:type_name -> user_v1.UserUpdateInput
 	3,  // 10: user_v1.UserV1.GetById:input_type -> user_v1.GetByIdRequest
 	5,  // 11: user_v1.UserV1.Update:input_type -> user_v1.UpdateRequest
 	6,  // 12: user_v1.UserV1.Delete:input_type -> user_v1.DeleteRequest
 	4,  // 13: user_v1.UserV1.GetById:output_type -> user_v1.GetByIdResponse
-	10, // 14: user_v1.UserV1.Update:output_type -> google.protobuf.Empty
-	10, // 15: user_v1.UserV1.Delete:output_type -> google.protobuf.Empty
+	9,  // 14: user_v1.UserV1.Update:output_type -> google.protobuf.Empty
+	9,  // 15: user_v1.UserV1.Delete:output_type -> google.protobuf.Empty
 	13, // [13:16] is the sub-list for method output_type
 	10, // [10:13] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name

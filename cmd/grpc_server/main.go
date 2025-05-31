@@ -78,6 +78,7 @@ func main() {
 				jwtConfig.AccessTokenSecret(),
 				jwtConfig.AccessTokenExp(),
 				userRepo.New(dbc),
+				roleRepo.New(dbc),
 				txManager,
 			),
 		),
@@ -100,6 +101,7 @@ func main() {
 			user.New(
 				log,
 				userRepo.New(dbc),
+				roleRepo.New(dbc),
 				txManager,
 			),
 		),

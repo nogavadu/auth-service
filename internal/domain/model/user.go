@@ -9,7 +9,7 @@ type UserInfo struct {
 	Name   *string `json:"name"`
 	Email  string  `json:"email"`
 	Avatar *string `json:"avatar"`
-	RoleId int     `json:"role"`
+	Role   string  `json:"role"`
 }
 
 type UserUpdateInput struct {
@@ -17,5 +17,5 @@ type UserUpdateInput struct {
 	Email    *string `json:"email,omitempty"`
 	Avatar   *string `json:"avatar,omitempty"`
 	Password *string `json:"password,omitempty"`
-	RoleId   *int    `json:"roleId,omitempty"`
+	Role     *string `json:"roleId,omitempty"`
 }

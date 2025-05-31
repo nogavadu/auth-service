@@ -36,7 +36,7 @@ func (i *Implementation) GetById(ctx context.Context, request *userDesc.GetByIdR
 				Name:   utils.StringPtrToProtoString(user.Name),
 				Email:  user.Email,
 				Avatar: utils.StringPtrToProtoString(user.Avatar),
-				Role:   int32(user.RoleId),
+				Role:   user.Role,
 			},
 		},
 	}, nil
@@ -47,7 +47,7 @@ func (i *Implementation) Update(ctx context.Context, request *userDesc.UpdateReq
 		Name:   utils.ProtoStringToPtrString(request.GetUpdateInput().GetName()),
 		Email:  utils.ProtoStringToPtrString(request.GetUpdateInput().GetEmail()),
 		Avatar: utils.ProtoStringToPtrString(request.GetUpdateInput().GetAvatar()),
-		RoleId: utils.ProtoInt32ToPtrInt(request.GetUpdateInput().GetRole()),
+		Role:   utils.ProtoStringToPtrString(request.GetUpdateInput().GetRole()),
 	})
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())

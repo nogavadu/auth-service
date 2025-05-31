@@ -12,9 +12,9 @@ func GenerateToken(user *model.User, secretKey string, dur time.Duration) (strin
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(dur).Unix(),
 		},
-		Id:     user.Id,
-		Email:  user.Email,
-		RoleId: user.RoleId,
+		Id:    user.Id,
+		Email: user.Email,
+		Role:  user.Role,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

@@ -30,6 +30,7 @@ type authService struct {
 	accessTokenExpTime  time.Duration
 
 	userRepo  repository.UserRepository
+	roleRepo  repository.RoleRepository
 	txManager db.TxManager
 }
 
@@ -40,6 +41,7 @@ func New(
 	accessTokenSecret string,
 	accessTokenExp time.Duration,
 	userRepo repository.UserRepository,
+	roleRepo repository.RoleRepository,
 	txManager db.TxManager,
 ) service.AuthService {
 	return &authService{
@@ -49,6 +51,7 @@ func New(
 		accessTokenSecret:   accessTokenSecret,
 		accessTokenExpTime:  accessTokenExp,
 		userRepo:            userRepo,
+		roleRepo:            roleRepo,
 		txManager:           txManager,
 	}
 }
@@ -89,26 +92,61 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 
 	log := s.log.With(slog.String("op", op))
 
-	user, err := s.userRepo.GetByEmail(ctx, email)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return "", ErrInvalidCredentials
+	var user model.User
+	var role string
+	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		var errTx error
+		defer func() {
+			if errTx != nil {
+				log.Error("failed to get user", slog.String("error", errTx.Error()))
+			}
+		}()
+
+		repoUser, errTx := s.userRepo.GetByEmail(ctx, email)
+		if errTx != nil {
+			if errors.Is(errTx, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
+
+			return ErrInternal
 		}
 
-		log.Error("failed to get user", slog.String("err", err.Error()))
-		return "", ErrInternal
-	}
+		repoRole, errTx := s.roleRepo.GetById(ctx, repoUser.RoleId)
+		if errTx != nil {
+			if errors.Is(errTx, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
 
-	if !utils.VerifyPassword(user.PassHash, password) {
-		return "", ErrInvalidCredentials
+			return ErrInternal
+		}
+		role = repoRole.Name
+
+		user = model.User{
+			Id: repoUser.Id,
+			UserInfo: model.UserInfo{
+				Name:   repoUser.Name,
+				Email:  repoUser.Email,
+				Avatar: repoUser.Avatar,
+				Role:   role,
+			},
+		}
+
+		if !utils.VerifyPassword(repoUser.PassHash, password) {
+			return ErrInvalidCredentials
+		}
+
+		return nil
+	})
+	if err != nil {
+		return "", ErrInternal
 	}
 
 	refreshToken, err := utils.GenerateToken(
 		&model.User{
 			Id: user.Id,
 			UserInfo: model.UserInfo{
-				Email:  user.Email,
-				RoleId: user.RoleId,
+				Email: user.Email,
+				Role:  role,
 			},
 		},
 		s.refreshTokenSecret,
@@ -131,13 +169,48 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 		return "", ErrInvalidRefreshToken
 	}
 
-	user, err := s.userRepo.GetByEmail(ctx, claims.Email)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return "", ErrInvalidCredentials
+	var user model.User
+	var role string
+	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		var errTx error
+		defer func() {
+			if errTx != nil {
+				log.Error("failed to get user", slog.String("error", errTx.Error()))
+			}
+		}()
+
+		repoUser, errTx := s.userRepo.GetById(ctx, claims.Id)
+		if err != nil {
+			if errors.Is(err, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
+
+			return ErrInternal
 		}
 
-		log.Error("failed to get user", slog.String("err", err.Error()))
+		repoRole, errTx := s.roleRepo.GetById(ctx, repoUser.RoleId)
+		if errTx != nil {
+			if errors.Is(err, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
+
+			return ErrInternal
+		}
+		role = repoRole.Name
+
+		user = model.User{
+			Id: repoUser.Id,
+			UserInfo: model.UserInfo{
+				Name:   repoUser.Name,
+				Email:  repoUser.Email,
+				Avatar: repoUser.Avatar,
+				Role:   role,
+			},
+		}
+
+		return nil
+	})
+	if err != nil {
 		return "", ErrInternal
 	}
 
@@ -145,8 +218,8 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 		&model.User{
 			Id: user.Id,
 			UserInfo: model.UserInfo{
-				Email:  user.Email,
-				RoleId: user.RoleId,
+				Email: user.Email,
+				Role:  role,
 			},
 		},
 		s.refreshTokenSecret,
@@ -169,13 +242,48 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 		return "", ErrInvalidRefreshToken
 	}
 
-	user, err := s.userRepo.GetByEmail(ctx, claims.Email)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return "", ErrInvalidCredentials
+	var user model.User
+	var role string
+	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		var errTx error
+		defer func() {
+			if errTx != nil {
+				log.Error("failed to get user", slog.String("error", errTx.Error()))
+			}
+		}()
+
+		repoUser, errTx := s.userRepo.GetById(ctx, claims.Id)
+		if err != nil {
+			if errors.Is(err, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
+
+			return ErrInternal
 		}
 
-		log.Error("failed to get user", slog.String("err", err.Error()))
+		repoRole, errTx := s.roleRepo.GetById(ctx, repoUser.RoleId)
+		if errTx != nil {
+			if errors.Is(err, repository.ErrNotFound) {
+				return ErrInvalidCredentials
+			}
+
+			return ErrInternal
+		}
+		role = repoRole.Name
+
+		user = model.User{
+			Id: repoUser.Id,
+			UserInfo: model.UserInfo{
+				Name:   repoUser.Name,
+				Email:  repoUser.Email,
+				Avatar: repoUser.Avatar,
+				Role:   role,
+			},
+		}
+
+		return nil
+	})
+	if err != nil {
 		return "", ErrInternal
 	}
 
@@ -183,8 +291,8 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 		&model.User{
 			Id: user.Id,
 			UserInfo: model.UserInfo{
-				Email:  user.Email,
-				RoleId: user.RoleId,
+				Email: user.Email,
+				Role:  role,
 			},
 		},
 		s.accessTokenSecret,
@@ -192,6 +300,7 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 	)
 	if err != nil {
 		log.Error("failed to generate jwt token", slog.String("err", err.Error()))
+		return "", ErrInternal
 	}
 
 	return accessToken, nil
