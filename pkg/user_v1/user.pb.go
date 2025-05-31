@@ -26,7 +26,7 @@ const (
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Int           int64                  `protobuf:"varint,1,opt,name=int,proto3" json:"int,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Info          *UserInfo              `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -62,9 +62,9 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *User) GetInt() int64 {
+func (x *User) GetId() int64 {
 	if x != nil {
-		return x.Int
+		return x.Id
 	}
 	return 0
 }
@@ -409,9 +409,9 @@ var File_user_proto protoreflect.FileDescriptor
 const file_user_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"user.proto\x12\auser_v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/wrappers.proto\"?\n" +
-	"\x04User\x12\x10\n" +
-	"\x03int\x18\x01 \x01(\x03R\x03int\x12%\n" +
+	"user.proto\x12\auser_v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/wrappers.proto\"=\n" +
+	"\x04User\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12%\n" +
 	"\x04info\x18\x02 \x01(\v2\x11.user_v1.UserInfoR\x04info\"\xd7\x01\n" +
 	"\bUserInfo\x120\n" +
 	"\x04name\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x12\x14\n" +

@@ -31,7 +31,7 @@ func (i *Implementation) GetById(ctx context.Context, request *userDesc.GetByIdR
 
 	return &userDesc.GetByIdResponse{
 		User: &userDesc.User{
-			Int: int64(user.Id),
+			Id: int64(user.Id),
 			Info: &userDesc.UserInfo{
 				Name:   utils.StringPtrToProtoString(user.Name),
 				Email:  user.Email,
