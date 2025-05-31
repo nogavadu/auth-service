@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/nogavadu/auth-service/internal/domain/model"
 	"github.com/nogavadu/auth-service/internal/repository"
+	userRepoModel "github.com/nogavadu/auth-service/internal/repository/user/model"
 	"github.com/nogavadu/auth-service/internal/service"
 	"github.com/nogavadu/auth-service/internal/utils"
 	"github.com/nogavadu/platform_common/pkg/db"
@@ -52,7 +53,7 @@ func New(
 	}
 }
 
-func (s *authService) Register(ctx context.Context, email, password string) (int, error) {
+func (s *authService) Register(ctx context.Context, userInfo *model.UserInfo, password string) (int, error) {
 	const op = "authService.Register"
 
 	log := s.log.With(slog.String("op", op))
@@ -64,7 +65,13 @@ func (s *authService) Register(ctx context.Context, email, password string) (int
 		return 0, ErrInvalidCredentials
 	}
 
-	userId, err := s.userRepo.Create(ctx, email, string(passHash))
+	userId, err := s.userRepo.Create(ctx, &userRepoModel.UserInfo{
+		Name:     userInfo.Name,
+		Email:    userInfo.Email,
+		PassHash: string(passHash),
+		Avatar:   nil,
+		RoleId:   0,
+	}, string(passHash))
 	if err != nil {
 		if errors.Is(err, repository.ErrAlreadyExists) {
 			return 0, ErrAlreadyExists
@@ -97,10 +104,12 @@ func (s *authService) Login(ctx context.Context, email string, password string) 
 	}
 
 	refreshToken, err := utils.GenerateToken(
-		&model.UserInfo{
-			Id:     user.Id,
-			Email:  user.Email,
-			RoleId: user.RoleId,
+		&model.User{
+			Id: user.Id,
+			UserInfo: model.UserInfo{
+				Email:  user.Email,
+				RoleId: user.RoleId,
+			},
 		},
 		s.refreshTokenSecret,
 		s.refreshTokenExpTime,
@@ -133,10 +142,12 @@ func (s *authService) GetRefreshToken(ctx context.Context, refreshToken string) 
 	}
 
 	newRefreshToken, err := utils.GenerateToken(
-		&model.UserInfo{
-			Id:     user.Id,
-			Email:  user.Email,
-			RoleId: user.RoleId,
+		&model.User{
+			Id: user.Id,
+			UserInfo: model.UserInfo{
+				Email:  user.Email,
+				RoleId: user.RoleId,
+			},
 		},
 		s.refreshTokenSecret,
 		s.refreshTokenExpTime,
@@ -169,10 +180,12 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 	}
 
 	accessToken, err := utils.GenerateToken(
-		&model.UserInfo{
-			Id:     user.Id,
-			Email:  user.Email,
-			RoleId: user.RoleId,
+		&model.User{
+			Id: user.Id,
+			UserInfo: model.UserInfo{
+				Email:  user.Email,
+				RoleId: user.RoleId,
+			},
 		},
 		s.accessTokenSecret,
 		s.accessTokenExpTime,

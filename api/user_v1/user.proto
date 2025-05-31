@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package user_v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/nogavadu/pkg/user_v1;user_v1";
+
+service UserV1 {
+  rpc GetById(GetByIdRequest) returns (GetByIdResponse);
+  rpc Update(UpdateRequest) returns (google.protobuf.Empty);
+  rpc Delete(DeleteRequest) returns (google.protobuf.Empty);
+}
+
+message User {
+  int64 int = 1;
+  UserInfo info = 2;
+}
+
+message UserInfo {
+  google.protobuf.StringValue name = 1;
+  string email = 2;
+  google.protobuf.StringValue avatar = 3;
+  int32 role = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message UserUpdateInput {
+  google.protobuf.StringValue name = 1;
+  google.protobuf.StringValue email = 2;
+  google.protobuf.StringValue avatar = 3;
+  google.protobuf.Int32Value role = 4;
+}
+
+message GetByIdRequest {
+  int64 id = 1;
+}
+
+message GetByIdResponse {
+  User user = 1;
+}
+
+message UpdateRequest {
+  int64 id = 1;
+  UserUpdateInput update_input = 2;
+}
+
+message DeleteRequest {
+  int64 id = 1;
+}

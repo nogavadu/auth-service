@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/nogavadu/auth-service/internal/domain/model"
 	"github.com/nogavadu/auth-service/internal/service"
 	authService "github.com/nogavadu/auth-service/internal/service/auth"
+	"github.com/nogavadu/auth-service/internal/utils"
 	authDesc "github.com/nogavadu/auth-service/pkg/auth_v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -31,8 +33,12 @@ func (i *Implementation) Register(ctx context.Context, req *authDesc.RegisterReq
 	if err := validator.New().Var(password, "required"); err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid argument")
 	}
+	name := req.GetName()
 
-	userId, err := i.serv.Register(ctx, email, password)
+	userId, err := i.serv.Register(ctx, &model.UserInfo{
+		Name:  utils.ProtoStringToPtrString(name),
+		Email: email,
+	}, password)
 	if err != nil {
 		if errors.Is(err, authService.ErrInvalidCredentials) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())

@@ -9,6 +9,8 @@ package auth_v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	_ "google.golang.org/protobuf/types/known/emptypb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -22,9 +24,10 @@ const (
 )
 
 type RegisterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Email         string                  `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password      string                  `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Name          *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -71,6 +74,13 @@ func (x *RegisterRequest) GetPassword() string {
 		return x.Password
 	}
 	return ""
+}
+
+func (x *RegisterRequest) GetName() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Name
+	}
+	return nil
 }
 
 type RegisterResponse struct {
@@ -394,10 +404,11 @@ var File_auth_proto protoreflect.FileDescriptor
 const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"auth.proto\x12\aauth_v1\"C\n" +
+	"auth.proto\x12\aauth_v1\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1egoogle/protobuf/wrappers.proto\"u\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"+\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x120\n" +
+	"\x04name\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\"+\n" +
 	"\x10RegisterResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\x04R\x06userId\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
@@ -441,21 +452,23 @@ var file_auth_proto_goTypes = []any{
 	(*GetRefreshTokenResponse)(nil), // 5: auth_v1.GetRefreshTokenResponse
 	(*GetAccessTokenRequest)(nil),   // 6: auth_v1.GetAccessTokenRequest
 	(*GetAccessTokenResponse)(nil),  // 7: auth_v1.GetAccessTokenResponse
+	(*wrapperspb.StringValue)(nil),  // 8: google.protobuf.StringValue
 }
 var file_auth_proto_depIdxs = []int32{
-	0, // 0: auth_v1.AuthV1.Register:input_type -> auth_v1.RegisterRequest
-	2, // 1: auth_v1.AuthV1.Login:input_type -> auth_v1.LoginRequest
-	4, // 2: auth_v1.AuthV1.GetRefreshToken:input_type -> auth_v1.GetRefreshTokenRequest
-	6, // 3: auth_v1.AuthV1.GetAccessToken:input_type -> auth_v1.GetAccessTokenRequest
-	1, // 4: auth_v1.AuthV1.Register:output_type -> auth_v1.RegisterResponse
-	3, // 5: auth_v1.AuthV1.Login:output_type -> auth_v1.LoginResponse
-	5, // 6: auth_v1.AuthV1.GetRefreshToken:output_type -> auth_v1.GetRefreshTokenResponse
-	7, // 7: auth_v1.AuthV1.GetAccessToken:output_type -> auth_v1.GetAccessTokenResponse
-	4, // [4:8] is the sub-list for method output_type
-	0, // [0:4] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	8, // 0: auth_v1.RegisterRequest.name:type_name -> google.protobuf.StringValue
+	0, // 1: auth_v1.AuthV1.Register:input_type -> auth_v1.RegisterRequest
+	2, // 2: auth_v1.AuthV1.Login:input_type -> auth_v1.LoginRequest
+	4, // 3: auth_v1.AuthV1.GetRefreshToken:input_type -> auth_v1.GetRefreshTokenRequest
+	6, // 4: auth_v1.AuthV1.GetAccessToken:input_type -> auth_v1.GetAccessTokenRequest
+	1, // 5: auth_v1.AuthV1.Register:output_type -> auth_v1.RegisterResponse
+	3, // 6: auth_v1.AuthV1.Login:output_type -> auth_v1.LoginResponse
+	5, // 7: auth_v1.AuthV1.GetRefreshToken:output_type -> auth_v1.GetRefreshTokenResponse
+	7, // 8: auth_v1.AuthV1.GetAccessToken:output_type -> auth_v1.GetAccessTokenResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_auth_proto_init() }

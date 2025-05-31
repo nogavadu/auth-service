@@ -4,13 +4,16 @@ import (
 	"context"
 	accessAPI "github.com/nogavadu/auth-service/internal/api/grpc/access"
 	authAPI "github.com/nogavadu/auth-service/internal/api/grpc/auth"
+	userAPI "github.com/nogavadu/auth-service/internal/api/grpc/user"
 	envConfig "github.com/nogavadu/auth-service/internal/config/env"
 	roleRepo "github.com/nogavadu/auth-service/internal/repository/role"
 	userRepo "github.com/nogavadu/auth-service/internal/repository/user"
 	accessService "github.com/nogavadu/auth-service/internal/service/access"
 	authService "github.com/nogavadu/auth-service/internal/service/auth"
+	"github.com/nogavadu/auth-service/internal/service/user"
 	descAccess "github.com/nogavadu/auth-service/pkg/access_v1"
 	descAuth "github.com/nogavadu/auth-service/pkg/auth_v1"
+	descUser "github.com/nogavadu/auth-service/pkg/user_v1"
 	"github.com/nogavadu/platform_common/pkg/db/pg"
 	"github.com/nogavadu/platform_common/pkg/db/transaction"
 	"google.golang.org/grpc"
@@ -89,6 +92,15 @@ func main() {
 				jwtConfig.AccessTokenExp(),
 				userRepo.New(dbc),
 				roleRepo.New(dbc),
+			),
+		),
+	)
+	descUser.RegisterUserV1Server(
+		s, userAPI.New(
+			user.New(
+				log,
+				userRepo.New(dbc),
+				txManager,
 			),
 		),
 	)
