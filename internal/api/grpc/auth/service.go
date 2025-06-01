@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/nogavadu/auth-service/internal/domain/model"
 	"github.com/nogavadu/auth-service/internal/service"
 	authService "github.com/nogavadu/auth-service/internal/service/auth"
@@ -117,4 +118,22 @@ func (i *Implementation) GetAccessToken(ctx context.Context, req *authDesc.GetAc
 	return &authDesc.GetAccessTokenResponse{
 		AccessToken: accessToken,
 	}, nil
+}
+
+func (i *Implementation) IsUser(ctx context.Context, req *authDesc.IsUserRequest) (*empty.Empty, error) {
+	refreshToken := req.GetRefreshToken()
+	if err := validator.New().Var(refreshToken, "required,jwt"); err != nil {
+		return nil, status.Error(codes.InvalidArgument, "refresh token is required")
+	}
+
+	userId := req.GetUserId()
+	if err := validator.New().Var(userId, "required"); err != nil {
+		return nil, status.Error(codes.InvalidArgument, "user id is required")
+	}
+
+	if err := i.serv.IsUser(ctx, int(userId), refreshToken); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "not a same user")
+	}
+
+	return nil, nil
 }

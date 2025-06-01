@@ -305,3 +305,21 @@ func (s *authService) GetAccessToken(ctx context.Context, refreshToken string) (
 
 	return accessToken, nil
 }
+
+func (s *authService) IsUser(ctx context.Context, userId int, refreshToken string) error {
+	const op = "authService.IsUser"
+	log := s.log.With(slog.String("op", op))
+
+	claims, err := utils.VerifyToken(refreshToken, s.refreshTokenSecret)
+	if err != nil {
+		log.Error("failed to verify jwt token", slog.String("err", err.Error()))
+		return ErrInvalidRefreshToken
+	}
+
+	if claims.Id != userId {
+		log.Error("not a same user")
+		return ErrInvalidCredentials
+	}
+
+	return nil
+}

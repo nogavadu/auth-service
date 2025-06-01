@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,6 +24,7 @@ const (
 	AuthV1_Login_FullMethodName           = "/auth_v1.AuthV1/Login"
 	AuthV1_GetRefreshToken_FullMethodName = "/auth_v1.AuthV1/GetRefreshToken"
 	AuthV1_GetAccessToken_FullMethodName  = "/auth_v1.AuthV1/GetAccessToken"
+	AuthV1_IsUser_FullMethodName          = "/auth_v1.AuthV1/IsUser"
 )
 
 // AuthV1Client is the client API for AuthV1 service.
@@ -33,6 +35,7 @@ type AuthV1Client interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	GetRefreshToken(ctx context.Context, in *GetRefreshTokenRequest, opts ...grpc.CallOption) (*GetRefreshTokenResponse, error)
 	GetAccessToken(ctx context.Context, in *GetAccessTokenRequest, opts ...grpc.CallOption) (*GetAccessTokenResponse, error)
+	IsUser(ctx context.Context, in *IsUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authV1Client struct {
@@ -83,6 +86,16 @@ func (c *authV1Client) GetAccessToken(ctx context.Context, in *GetAccessTokenReq
 	return out, nil
 }
 
+func (c *authV1Client) IsUser(ctx context.Context, in *IsUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AuthV1_IsUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthV1Server is the server API for AuthV1 service.
 // All implementations must embed UnimplementedAuthV1Server
 // for forward compatibility.
@@ -91,6 +104,7 @@ type AuthV1Server interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	GetRefreshToken(context.Context, *GetRefreshTokenRequest) (*GetRefreshTokenResponse, error)
 	GetAccessToken(context.Context, *GetAccessTokenRequest) (*GetAccessTokenResponse, error)
+	IsUser(context.Context, *IsUserRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthV1Server()
 }
 
@@ -112,6 +126,9 @@ func (UnimplementedAuthV1Server) GetRefreshToken(context.Context, *GetRefreshTok
 }
 func (UnimplementedAuthV1Server) GetAccessToken(context.Context, *GetAccessTokenRequest) (*GetAccessTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAccessToken not implemented")
+}
+func (UnimplementedAuthV1Server) IsUser(context.Context, *IsUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsUser not implemented")
 }
 func (UnimplementedAuthV1Server) mustEmbedUnimplementedAuthV1Server() {}
 func (UnimplementedAuthV1Server) testEmbeddedByValue()                {}
@@ -206,6 +223,24 @@ func _AuthV1_GetAccessToken_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthV1_IsUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthV1Server).IsUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthV1_IsUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthV1Server).IsUser(ctx, req.(*IsUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthV1_ServiceDesc is the grpc.ServiceDesc for AuthV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +263,10 @@ var AuthV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAccessToken",
 			Handler:    _AuthV1_GetAccessToken_Handler,
+		},
+		{
+			MethodName: "IsUser",
+			Handler:    _AuthV1_IsUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

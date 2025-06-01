@@ -10,6 +10,7 @@ type AuthService interface {
 	Login(ctx context.Context, email string, password string) (string, error)
 	GetRefreshToken(ctx context.Context, refreshToken string) (string, error)
 	GetAccessToken(ctx context.Context, refreshToken string) (string, error)
+	IsUser(ctx context.Context, userId int, refreshToken string) error
 }
 
 type AccessService interface {

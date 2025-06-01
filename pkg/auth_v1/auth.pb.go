@@ -9,7 +9,7 @@ package auth_v1
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "google.golang.org/protobuf/types/known/emptypb"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
@@ -399,6 +399,58 @@ func (x *GetAccessTokenResponse) GetAccessToken() string {
 	return ""
 }
 
+type IsUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	UserId        uint64                 `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IsUserRequest) Reset() {
+	*x = IsUserRequest{}
+	mi := &file_auth_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IsUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IsUserRequest) ProtoMessage() {}
+
+func (x *IsUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IsUserRequest.ProtoReflect.Descriptor instead.
+func (*IsUserRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *IsUserRequest) GetRefreshToken() string {
+	if x != nil {
+		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *IsUserRequest) GetUserId() uint64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -423,12 +475,16 @@ const file_auth_proto_rawDesc = "" +
 	"\x15GetAccessTokenRequest\x12#\n" +
 	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\";\n" +
 	"\x16GetAccessTokenResponse\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken2\xaa\x02\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"M\n" +
+	"\rIsUserRequest\x12#\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x04R\x06userId2\xe4\x02\n" +
 	"\x06AuthV1\x12?\n" +
 	"\bRegister\x12\x18.auth_v1.RegisterRequest\x1a\x19.auth_v1.RegisterResponse\x126\n" +
 	"\x05Login\x12\x15.auth_v1.LoginRequest\x1a\x16.auth_v1.LoginResponse\x12T\n" +
 	"\x0fGetRefreshToken\x12\x1f.auth_v1.GetRefreshTokenRequest\x1a .auth_v1.GetRefreshTokenResponse\x12Q\n" +
-	"\x0eGetAccessToken\x12\x1e.auth_v1.GetAccessTokenRequest\x1a\x1f.auth_v1.GetAccessTokenResponseB)Z'github.com/nogavadu/pkg/auth_v1;auth_v1b\x06proto3"
+	"\x0eGetAccessToken\x12\x1e.auth_v1.GetAccessTokenRequest\x1a\x1f.auth_v1.GetAccessTokenResponse\x128\n" +
+	"\x06IsUser\x12\x16.auth_v1.IsUserRequest\x1a\x16.google.protobuf.EmptyB)Z'github.com/nogavadu/pkg/auth_v1;auth_v1b\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -442,7 +498,7 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_auth_proto_goTypes = []any{
 	(*RegisterRequest)(nil),         // 0: auth_v1.RegisterRequest
 	(*RegisterResponse)(nil),        // 1: auth_v1.RegisterResponse
@@ -452,23 +508,27 @@ var file_auth_proto_goTypes = []any{
 	(*GetRefreshTokenResponse)(nil), // 5: auth_v1.GetRefreshTokenResponse
 	(*GetAccessTokenRequest)(nil),   // 6: auth_v1.GetAccessTokenRequest
 	(*GetAccessTokenResponse)(nil),  // 7: auth_v1.GetAccessTokenResponse
-	(*wrapperspb.StringValue)(nil),  // 8: google.protobuf.StringValue
+	(*IsUserRequest)(nil),           // 8: auth_v1.IsUserRequest
+	(*wrapperspb.StringValue)(nil),  // 9: google.protobuf.StringValue
+	(*emptypb.Empty)(nil),           // 10: google.protobuf.Empty
 }
 var file_auth_proto_depIdxs = []int32{
-	8, // 0: auth_v1.RegisterRequest.name:type_name -> google.protobuf.StringValue
-	0, // 1: auth_v1.AuthV1.Register:input_type -> auth_v1.RegisterRequest
-	2, // 2: auth_v1.AuthV1.Login:input_type -> auth_v1.LoginRequest
-	4, // 3: auth_v1.AuthV1.GetRefreshToken:input_type -> auth_v1.GetRefreshTokenRequest
-	6, // 4: auth_v1.AuthV1.GetAccessToken:input_type -> auth_v1.GetAccessTokenRequest
-	1, // 5: auth_v1.AuthV1.Register:output_type -> auth_v1.RegisterResponse
-	3, // 6: auth_v1.AuthV1.Login:output_type -> auth_v1.LoginResponse
-	5, // 7: auth_v1.AuthV1.GetRefreshToken:output_type -> auth_v1.GetRefreshTokenResponse
-	7, // 8: auth_v1.AuthV1.GetAccessToken:output_type -> auth_v1.GetAccessTokenResponse
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	9,  // 0: auth_v1.RegisterRequest.name:type_name -> google.protobuf.StringValue
+	0,  // 1: auth_v1.AuthV1.Register:input_type -> auth_v1.RegisterRequest
+	2,  // 2: auth_v1.AuthV1.Login:input_type -> auth_v1.LoginRequest
+	4,  // 3: auth_v1.AuthV1.GetRefreshToken:input_type -> auth_v1.GetRefreshTokenRequest
+	6,  // 4: auth_v1.AuthV1.GetAccessToken:input_type -> auth_v1.GetAccessTokenRequest
+	8,  // 5: auth_v1.AuthV1.IsUser:input_type -> auth_v1.IsUserRequest
+	1,  // 6: auth_v1.AuthV1.Register:output_type -> auth_v1.RegisterResponse
+	3,  // 7: auth_v1.AuthV1.Login:output_type -> auth_v1.LoginResponse
+	5,  // 8: auth_v1.AuthV1.GetRefreshToken:output_type -> auth_v1.GetRefreshTokenResponse
+	7,  // 9: auth_v1.AuthV1.GetAccessToken:output_type -> auth_v1.GetAccessTokenResponse
+	10, // 10: auth_v1.AuthV1.IsUser:output_type -> google.protobuf.Empty
+	6,  // [6:11] is the sub-list for method output_type
+	1,  // [1:6] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_auth_proto_init() }
@@ -482,7 +542,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

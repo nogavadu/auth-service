@@ -12,6 +12,7 @@ service AuthV1 {
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc GetRefreshToken (GetRefreshTokenRequest) returns (GetRefreshTokenResponse);
   rpc GetAccessToken (GetAccessTokenRequest) returns (GetAccessTokenResponse);
+  rpc IsUser(IsUserRequest) returns (google.protobuf.Empty);
 }
 
 message RegisterRequest {
@@ -47,4 +48,9 @@ message GetAccessTokenRequest {
 
 message GetAccessTokenResponse {
   string access_token = 1;
+}
+
+message IsUserRequest {
+  string refresh_token = 1;
+  uint64 user_id = 2;
 }
