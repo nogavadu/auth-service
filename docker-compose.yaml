@@ -6,11 +6,11 @@ services:
     build:
       context: .
       dockerfile: grpc-server.Dockerfile
-    networks:
-      - shared_network
     env_file: ".env"
     ports:
       - "${GRPC_SERVER_PORT}:${GRPC_SERVER_PORT}"
+    networks:
+      - shared_network
     depends_on:
       pg:
         condition: service_healthy

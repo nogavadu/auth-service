@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"github.com/IBM/sarama"
 	"github.com/nogavadu/auth-service/internal/domain/model"
 	"github.com/nogavadu/auth-service/internal/repository"
 	userRepoModel "github.com/nogavadu/auth-service/internal/repository/user/model"
@@ -32,6 +34,8 @@ type authService struct {
 	userRepo  repository.UserRepository
 	roleRepo  repository.RoleRepository
 	txManager db.TxManager
+
+	registrationsProducer sarama.SyncProducer
 }
 
 func New(
@@ -44,15 +48,23 @@ func New(
 	roleRepo repository.RoleRepository,
 	txManager db.TxManager,
 ) service.AuthService {
+	var addresses = []string{"kafka1:29091", "kafka2:29092"}
+
+	producer, err := sarama.NewSyncProducer(addresses, nil)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return &authService{
-		log:                 log,
-		refreshTokenSecret:  refreshTokenSecret,
-		refreshTokenExpTime: refreshTokenExp,
-		accessTokenSecret:   accessTokenSecret,
-		accessTokenExpTime:  accessTokenExp,
-		userRepo:            userRepo,
-		roleRepo:            roleRepo,
-		txManager:           txManager,
+		log:                   log,
+		refreshTokenSecret:    refreshTokenSecret,
+		refreshTokenExpTime:   refreshTokenExp,
+		accessTokenSecret:     accessTokenSecret,
+		accessTokenExpTime:    accessTokenExp,
+		userRepo:              userRepo,
+		roleRepo:              roleRepo,
+		txManager:             txManager,
+		registrationsProducer: producer,
 	}
 }
 
@@ -68,23 +80,44 @@ func (s *authService) Register(ctx context.Context, userInfo *model.UserInfo, pa
 		return 0, ErrInvalidCredentials
 	}
 
-	userId, err := s.userRepo.Create(ctx, &userRepoModel.UserInfo{
-		Name:     userInfo.Name,
-		Email:    userInfo.Email,
-		PassHash: string(passHash),
-		Avatar:   nil,
-		RoleId:   0,
-	}, string(passHash))
-	if err != nil {
-		if errors.Is(err, repository.ErrAlreadyExists) {
-			return 0, ErrAlreadyExists
+	var userId int
+	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		var errTx error
+		defer func() {
+			if errTx != nil {
+				log.Error(fmt.Sprintf("%s: failed transaction, %w", op, errTx))
+			}
+		}()
+
+		rUserId, errTx := s.userRepo.Create(ctx, &userRepoModel.UserInfo{
+			Name:     userInfo.Name,
+			Email:    userInfo.Email,
+			PassHash: string(passHash),
+			Avatar:   nil,
+			RoleId:   0,
+		})
+		if errTx != nil {
+			if errors.Is(errTx, repository.ErrAlreadyExists) {
+				return ErrAlreadyExists
+			}
+
+			return ErrInternal
+		}
+		userId = rUserId
+
+		_, _, errTx = s.registrationsProducer.SendMessage(&sarama.ProducerMessage{
+			Topic:     "registrations-topic",
+			Value:     sarama.StringEncoder(userInfo.Email),
+			Timestamp: time.Now(),
+		})
+		if errTx != nil {
+			return ErrInternal
 		}
 
-		log.Error("failed to create user", slog.String("error", err.Error()))
-		return 0, ErrInternal
-	}
+		return nil
+	})
 
-	return userId, nil
+	return userId, err
 }
 
 func (s *authService) Login(ctx context.Context, email string, password string) (string, error) {

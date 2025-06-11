@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/nogavadu/auth-service/internal/domain/model"
 	"github.com/nogavadu/auth-service/internal/repository"
-	roleRepoModel "github.com/nogavadu/auth-service/internal/repository/role/model"
 	userRepoModel "github.com/nogavadu/auth-service/internal/repository/user/model"
 	"github.com/nogavadu/auth-service/internal/service"
 	"github.com/nogavadu/platform_common/pkg/db"
@@ -89,21 +88,22 @@ func (s *userService) Update(ctx context.Context, id int, input *model.UserUpdat
 			}
 		}()
 
-		var role *roleRepoModel.Role
+		var roleId *int
 		if input.Role != nil {
-			role, errTx = s.roleRepo.GetByName(ctx, *input.Role)
+			role, errTx := s.roleRepo.GetByName(ctx, *input.Role)
 			if errTx != nil {
 				return errTx
 			}
+			intRole := int(role.ID)
+			roleId = &intRole
 		}
-		roleId := int(role.ID)
 
 		if errTx = s.userRepo.Update(ctx, id, &userRepoModel.UserUpdateInput{
 			Name:     input.Name,
 			Email:    input.Email,
 			Password: input.Password,
 			Avatar:   input.Avatar,
-			RoleId:   &roleId,
+			RoleId:   roleId,
 		}); errTx != nil {
 			return errTx
 		}

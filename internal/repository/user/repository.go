@@ -22,12 +22,12 @@ func New(dbc db.Client) repo.UserRepository {
 	}
 }
 
-func (r *userRepository) Create(ctx context.Context, info *userRepoModel.UserInfo, passHash string) (int, error) {
+func (r *userRepository) Create(ctx context.Context, info *userRepoModel.UserInfo) (int, error) {
 	const op = "userRepository.Create"
 
 	values := map[string]interface{}{
 		"email":         info.Email,
-		"password_hash": passHash,
+		"password_hash": info.PassHash,
 	}
 
 	if info.Name != nil {

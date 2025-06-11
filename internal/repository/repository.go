@@ -18,7 +18,7 @@ var (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, userInfo *userRepoModel.UserInfo, passHash string) (int, error)
+	Create(ctx context.Context, userInfo *userRepoModel.UserInfo) (int, error)
 	GetByEmail(ctx context.Context, email string) (*userRepoModel.User, error)
 	GetById(ctx context.Context, id int) (*userRepoModel.User, error)
 	Update(ctx context.Context, id int, input *userRepoModel.UserUpdateInput) error

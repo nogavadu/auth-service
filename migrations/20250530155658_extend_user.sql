@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 ALTER TABLE users
     ADD COLUMN IF NOT EXISTS name       VARCHAR,
-    ADD COLUMN IF NOT EXISTS avatar     VARCHAR;
+    ADD COLUMN IF NOT EXISTS avatar     VARCHAR; 
 -- +goose StatementEnd
 
 -- +goose Down
